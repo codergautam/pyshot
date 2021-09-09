@@ -7,12 +7,40 @@
 import math
 import pygame
 import os
+import random
 
 
 pygame.init()
 window = pygame.display.set_mode((1280, 720))
 player = pygame.transform.smoothscale(pygame.image.load("square.png").convert_alpha(), (100, 100))
     
+class Enemy:
+    def __init__(self):
+        self.pos  = (random.randint(0, 1280),random.randint(0,720))
+        self.enemy = pygame.transform.smoothscale(pygame.image.load("enemy.png").convert_alpha(), (50, 50))
+    def update():
+        #do stuff
+        pass
+    def draw(self, px, py):
+        correction_angle = 0
+        enemy_pos = window.get_rect().center
+        enemy_rect = player.get_rect(center=enemy_pos)
+
+        enemy_rect.left = self.pos[0]
+        enemy_rect.top = self.pos[1]
+        
+        #px, py = player x player y
+        dx, dy = px - enemy_rect.centerx, py - enemy_rect.centery
+        angle = math.degrees(math.atan2(-dy, dx)) - correction_angle
+
+        rot_image = pygame.transform.rotate(self.enemy, angle)
+        rot_image_rect = rot_image.get_rect(center=enemy_rect.center)
+
+
+        window.blit(rot_image, rot_image_rect.topleft)
+        
+
+
 class Bullet:
     def __init__(self, x, y):
         self.pos = (x, y)
@@ -75,6 +103,7 @@ def rotate(x,y):
 
 
 bullets = []
+enemies = []
 run = True
 x = 0
 y = 0
@@ -88,6 +117,12 @@ while run:
             print(pos)
             bullets.append(Bullet(*(x+50,y+50)))
     
+    if(len(enemies) < 1):
+        enemies.append(Enemy())
+
+    for enemy in enemies:
+        enemy.draw(x,y)
+
     for bullet in bullets[:]:
         bullet.update()
         if not window.get_rect().collidepoint(bullet.pos):
