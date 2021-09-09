@@ -16,10 +16,13 @@ player = pygame.transform.smoothscale(pygame.image.load("square.png").convert_al
     
 class Enemy:
     def __init__(self):
-        self.pos  = (random.randint(0, 1280),random.randint(0,720))
+        self.pos  = (random.randint(50, 1230),random.randint(50,680))
         self.enemy = pygame.transform.smoothscale(pygame.image.load("enemy.png").convert_alpha(), (50, 50))
+        
+    def isColliding(self,point):
+        return self.rect.collidepoint(point)
     def update():
-        #do stuff
+       
         pass
     def draw(self, px, py):
         correction_angle = 0
@@ -35,7 +38,7 @@ class Enemy:
 
         rot_image = pygame.transform.rotate(self.enemy, angle)
         rot_image_rect = rot_image.get_rect(center=enemy_rect.center)
-
+        self.rect = rot_image_rect
 
         window.blit(rot_image, rot_image_rect.topleft)
         
@@ -105,6 +108,7 @@ def rotate(x,y):
 bullets = []
 enemies = []
 run = True
+done = False
 x = 0
 y = 0
 while run:
@@ -116,15 +120,24 @@ while run:
             pos = pygame.mouse.get_pos()
             print(pos)
             bullets.append(Bullet(*(x+50,y+50)))
-    
-    if(len(enemies) < 1):
-        enemies.append(Enemy())
+    if not done:
+        if(len(enemies) < 10):
+            enemies.append(Enemy())
+        else:
+            done = True
 
     for enemy in enemies:
         enemy.draw(x,y)
 
     for bullet in bullets[:]:
         bullet.update()
+        for enemy in enemies:
+            if enemy.isColliding(bullet.pos):
+                try:
+                    bullets.remove(bullet)
+                except:
+                    pass
+                enemies.remove(enemy)
         if not window.get_rect().collidepoint(bullet.pos):
             bullets.remove(bullet)
 
