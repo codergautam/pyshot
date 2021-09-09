@@ -26,7 +26,7 @@ class Bullet:
         angle = math.degrees(math.atan2(-self.dir[1], self.dir[0]))
 
         self.bullet = pygame.Surface((10, 4)).convert_alpha()
-        self.bullet.fill((0, 0, 0))
+        self.bullet.fill((51, 230, 255))
         self.bullet = pygame.transform.rotate(self.bullet, angle)
         self.speed = 10
 
@@ -40,7 +40,7 @@ class Bullet:
         surf.blit(self.bullet, bullet_rect)  
 
 def rotate(x,y):
-    correction_angle = 90
+    correction_angle = 0
     player_pos = window.get_rect().center
     player_rect = player.get_rect(center=player_pos)
 
