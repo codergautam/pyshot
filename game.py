@@ -9,6 +9,8 @@ import pygame
 import os
 import random
 
+import time
+
 
 pygame.init()
 window = pygame.display.set_mode((1280, 720))
@@ -18,12 +20,15 @@ class Enemy:
     def __init__(self):
         self.pos  = (random.randint(50, 1230),random.randint(50,680))
         self.enemy = pygame.transform.smoothscale(pygame.image.load("enemy.png").convert_alpha(), (50, 50))
+        self.bullets = []
         
     def isColliding(self,point):
         return self.rect.collidepoint(point)
-    def update():
-       
-        pass
+    def shoot(self, px, py):
+        self.bullets.append(Bullet(*(self.pos[0]+50,self.pos[1]+50), False, px, py))
+    def update(self, px, py):
+        self.shoot(px, py)
+        #time.sleep(1)
     def draw(self, px, py):
         correction_angle = 0
         enemy_pos = window.get_rect().center
@@ -45,9 +50,13 @@ class Enemy:
 
 
 class Bullet:
-    def __init__(self, x, y):
+    def __init__(self, x, y, player, px=False, py=False):
         self.pos = (x, y)
-        mx, my = pygame.mouse.get_pos()
+        self.player = player
+        if player:
+            mx, my = pygame.mouse.get_pos()
+        else:
+            mx, my = px, py
         self.dir = (mx - x, my - y)
         length = math.hypot(*self.dir)
         if length == 0.0:
@@ -57,7 +66,10 @@ class Bullet:
         angle = math.degrees(math.atan2(-self.dir[1], self.dir[0]))
 
         self.bullet = pygame.Surface((10, 4)).convert_alpha()
-        self.bullet.fill((51, 230, 255))
+        if player:
+            self.bullet.fill((51, 230, 255))
+        else:
+            self.bullet.fill((255, 51, 51))
         self.bullet = pygame.transform.rotate(self.bullet, angle)
         self.speed = 10
 
@@ -119,7 +131,7 @@ while run:
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
             print(pos)
-            bullets.append(Bullet(*(x+50,y+50)))
+            bullets.append(Bullet(*(x+50,y+50),True))
     if not done:
         if(len(enemies) < 10):
             enemies.append(Enemy())
@@ -127,7 +139,14 @@ while run:
             done = True
 
     for enemy in enemies:
+        for enemybullet in enemy.bullets:
+            enemybullet.update()
+            if not window.get_rect().collidepoint(enemybullet.pos):
+                enemy.bullets.remove(enemybullet)
+            else:
+                enemybullet.draw(window)
         enemy.draw(x,y)
+        enemy.update(x,y)
 
     for bullet in bullets[:]:
         bullet.update()
