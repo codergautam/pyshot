@@ -13,6 +13,9 @@ import time
 
 
 pygame.init()
+pygame.font.init() # you have to call this at the start, 
+                   # if you want to use this module.
+myfont = pygame.font.SysFont('Comic Sans MS', 30)
 window = pygame.display.set_mode((1280, 720))
 player = pygame.transform.smoothscale(pygame.image.load("square.png").convert_alpha(), (100, 100))
     
@@ -126,8 +129,10 @@ bullets = []
 enemies = []
 run = True
 done = False
+dead = False
 x = 0
 y = 0
+kills = 0
 while run:
     window.fill((255, 255, 255))
     for event in pygame.event.get():
@@ -137,6 +142,8 @@ while run:
             pos = pygame.mouse.get_pos()
             print(pos)
             bullets.append(Bullet(*(x+50,y+50),True))
+    if(len(enemies) == 0):
+        done = False
     if not done:
         if(len(enemies) <= 4):
             enemies.append(Enemy())
@@ -165,15 +172,20 @@ while run:
                 except:
                     pass
                 enemies.remove(enemy)
+                kills += 1
         if not window.get_rect().collidepoint(bullet.pos):
-            bullets.remove(bullet)
+            try:
+                bullets.remove(bullet)
+            except:
+                pass
 
     for bullet in bullets:
         bullet.draw(window)        
    
 
 
-
+    textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
+    window.blit(textsurface,(0,0))
     pygame.display.flip()
 
 pygame.quit()
