@@ -21,13 +21,18 @@ class Enemy:
         self.pos  = (random.randint(50, 1230),random.randint(50,680))
         self.enemy = pygame.transform.smoothscale(pygame.image.load("enemy.png").convert_alpha(), (50, 50))
         self.bullets = []
+        self.lastUpdate = time.time()
+        self.random = random.randint(10,50)/10
         
     def isColliding(self,point):
         return self.rect.collidepoint(point)
     def shoot(self, px, py):
         self.bullets.append(Bullet(*(self.pos[0]+50,self.pos[1]+50), False, px, py))
     def update(self, px, py):
-        self.shoot(px, py)
+        if(time.time() >= self.random+self.lastUpdate):
+            self.shoot(px, py)
+            self.lastUpdate = time.time()
+            self.random = random.randint(10,50)/10
         #time.sleep(1)
     def draw(self, px, py):
         correction_angle = 0
@@ -114,7 +119,7 @@ def rotate(x,y):
 
 
     window.blit(rot_image, rot_image_rect.topleft)
-    return((player_rect.left, player_rect.top))
+    return((player_rect.left, player_rect.top, rot_image_rect))
 
 
 bullets = []
@@ -133,11 +138,11 @@ while run:
             print(pos)
             bullets.append(Bullet(*(x+50,y+50),True))
     if not done:
-        if(len(enemies) < 10):
+        if(len(enemies) <= 4):
             enemies.append(Enemy())
         else:
             done = True
-
+    x,y,player_rect = rotate(x,y)
     for enemy in enemies:
         for enemybullet in enemy.bullets:
             enemybullet.update()
@@ -145,6 +150,9 @@ while run:
                 enemy.bullets.remove(enemybullet)
             else:
                 enemybullet.draw(window)
+            if player_rect.collidepoint(enemybullet.pos):
+                enemy.bullets.remove(enemybullet)
+                #dead rip
         enemy.draw(x,y)
         enemy.update(x,y)
 
@@ -162,7 +170,7 @@ while run:
 
     for bullet in bullets:
         bullet.draw(window)        
-    x,y = rotate(x,y)
+   
 
 
 
