@@ -1,8 +1,4 @@
-# GitHub:
-# https://github.com/Rabbid76/PyGameExamplesAndAnswers/blob/master/documentation/pygame/pygame_rotate_towards_target.md
-#
-# Stack Overflow:
-# https://stackoverflow.com/questions/58603835/how-to-rotate-an-imageplayer-to-the-mouse-direction/58604116#58604116
+
 
 import math
 import pygame
@@ -11,12 +7,16 @@ import random
 
 import time
 
+from pygame.image import load
+import easygui as g
+
+from pygame.constants import RESIZABLE
 
 pygame.init()
-pygame.font.init() # you have to call this at the start, 
-                   # if you want to use this module.
-myfont = pygame.font.SysFont('Comic Sans MS', 30)
-window = pygame.display.set_mode((1280, 720))
+
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), RESIZABLE)
 player = pygame.transform.smoothscale(pygame.image.load("square.png").convert_alpha(), (100, 100))
     
 class Enemy:
@@ -130,62 +130,80 @@ enemies = []
 run = True
 done = False
 dead = False
+loading = True
+
 x = 0
 y = 0
 kills = 0
 while run:
     window.fill((255, 255, 255))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
-            print(pos)
-            bullets.append(Bullet(*(x+50,y+50),True))
-    if(len(enemies) == 0):
-        done = False
-    if not done:
-        if(len(enemies) <= 4):
-            enemies.append(Enemy())
-        else:
-            done = True
-    x,y,player_rect = rotate(x,y)
-    for enemy in enemies:
-        for enemybullet in enemy.bullets:
-            enemybullet.update()
-            if not window.get_rect().collidepoint(enemybullet.pos):
-                enemy.bullets.remove(enemybullet)
+    if(loading):
+        myfont = pygame.font.SysFont('Calibri', 30)
+        overkillsfont = pygame.font.SysFont('Calibri', 50)
+        gameoverfont = pygame.font.SysFont('Calibri', 100)
+        loading = False
+    else:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if not dead:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+                    bullets.append(Bullet(*(x+50,y+50),True))
+        if(len(enemies) == 0):
+            done = False
+        if not done:
+            if(len(enemies) <= 4):
+                enemies.append(Enemy())
             else:
-                enemybullet.draw(window)
-            if player_rect.collidepoint(enemybullet.pos):
-                enemy.bullets.remove(enemybullet)
-                #dead rip
-        enemy.draw(x,y)
-        enemy.update(x,y)
+                done = True
 
-    for bullet in bullets[:]:
-        bullet.update()
         for enemy in enemies:
-            if enemy.isColliding(bullet.pos):
+            for enemybullet in enemy.bullets:
+                enemybullet.update()
+                if not window.get_rect().collidepoint(enemybullet.pos):
+                    enemy.bullets.remove(enemybullet)
+                else:
+                    enemybullet.draw(window)
+                if player_rect.collidepoint(enemybullet.pos):
+                    enemy.bullets.remove(enemybullet)
+                    #dead rip
+                    dead = True
+            enemy.draw(x,y)
+            enemy.update(x,y)
+
+        for bullet in bullets[:]:
+            bullet.update()
+            for enemy in enemies:
+                if enemy.isColliding(bullet.pos):
+                    try:
+                        bullets.remove(bullet)
+                    except:
+                        pass
+                    enemies.remove(enemy)
+                    kills += 1
+            if not window.get_rect().collidepoint(bullet.pos):
                 try:
                     bullets.remove(bullet)
                 except:
                     pass
-                enemies.remove(enemy)
-                kills += 1
-        if not window.get_rect().collidepoint(bullet.pos):
-            try:
-                bullets.remove(bullet)
-            except:
-                pass
 
-    for bullet in bullets:
-        bullet.draw(window)        
-   
+        for bullet in bullets:
+            bullet.draw(window)
+        if not dead:        
+            x,y,player_rect = rotate(x,y)
+        else:
 
-
-    textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
-    window.blit(textsurface,(0,0))
+            textsurface = gameoverfont.render('Game over ', False, (0, 0, 0))
+            killsurface = overkillsfont.render('You got '+str(kills)+" kills", False, (0, 0, 0))
+            text_rect = textsurface.get_rect(center=(SCREEN_WIDTH/2,SCREEN_HEIGHT/2-SCREEN_HEIGHT/4))
+            kill_rect = killsurface.get_rect(center=(SCREEN_WIDTH/2,SCREEN_HEIGHT/2-SCREEN_HEIGHT/15))
+            w, h = pygame.display.get_surface().get_size()
+            window.blit(textsurface,text_rect)
+            window.blit(killsurface,kill_rect)
+        if not dead:
+            textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
+            window.blit(textsurface,(0,0))
     pygame.display.flip()
 
 pygame.quit()
