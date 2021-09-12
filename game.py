@@ -16,38 +16,51 @@ pygame.init()
 myfont = pygame.font.Font('calibri.ttf', 30)
 overkillsfont = pygame.font.Font('calibri.ttf', 50)
 gameoverfont = pygame.font.Font('calibri.ttf', 100)
-
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+infoObject = pygame.display.Info()
+SCREEN_WIDTH = infoObject.current_w
+SCREEN_HEIGHT = infoObject.current_h
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), RESIZABLE)
 player = pygame.transform.smoothscale(pygame.image.load("square.png").convert_alpha(), (100, 100))
+
+enemyshootsound = pygame.mixer.Sound(file="enemyshoot.mp3")
+shootsound = pygame.mixer.Sound(file="shoot.mp3")
+killsound = pygame.mixer.Sound(file="kill.ogg")
     
 class Enemy:
     def __init__(self):
-        self.pos  = (random.randint(50, 1230),random.randint(50,680))
+        self.pos  = (random.randint(75, SCREEN_WIDTH-75),random.randint(75,SCREEN_HEIGHT-75))
+        #print (self.pos)
         self.enemy = pygame.transform.smoothscale(pygame.image.load("enemy.png").convert_alpha(), (50, 50))
         self.bullets = []
         self.lastUpdate = time.time()
         self.random = random.randint(10,50)/10
+
         
     def isColliding(self,point):
         return self.rect.collidepoint(point)
     def shoot(self, px, py):
         self.bullets.append(Bullet(*(self.pos[0]+50,self.pos[1]+50), False, px, py))
+        enemyshootsound.play()
     def update(self, px, py):
         if(time.time() >= self.random+self.lastUpdate):
             self.shoot(px, py)
             self.lastUpdate = time.time()
-            self.random = random.randint(10,50)/10
+            self.random = random.randint(5,15)/10
         #time.sleep(1)
+    def getRect(self):
+        enemy_pos = window.get_rect().center
+        enemy_rect = player.get_rect(center=enemy_pos)
+        enemy_rect.left = self.pos[0]
+        enemy_rect.top = self.pos[1]
+        return enemy_rect
     def draw(self, px, py):
         correction_angle = 0
         enemy_pos = window.get_rect().center
         enemy_rect = player.get_rect(center=enemy_pos)
-
+        
         enemy_rect.left = self.pos[0]
         enemy_rect.top = self.pos[1]
-        
+ 
         #px, py = player x player y
         dx, dy = px - enemy_rect.centerx, py - enemy_rect.centery
         angle = math.degrees(math.atan2(-dy, dx)) - correction_angle
@@ -106,13 +119,13 @@ def rotate(x,y):
     if(x > 0):
         if key[pygame.K_a] or key[pygame.K_LEFT]:
             player_rect.move_ip(-1*speed, 0)
-    if(x<1180):
+    if(x<SCREEN_WIDTH-100):
         if key[pygame.K_d] or key[pygame.K_RIGHT]:
             player_rect.move_ip(speed, 0)
     if(y>0):
         if key[pygame.K_w] or key[pygame.K_UP]:
             player_rect.move_ip(0, -1*speed)
-    if(y<620):
+    if(y<SCREEN_HEIGHT-100):
         if key[pygame.K_s] or key[pygame.K_DOWN]:
             player_rect.move_ip(0, speed)
     
@@ -140,7 +153,7 @@ x = 0
 y = 0
 kills = 0
 while run:
-    print(clock.get_fps())
+    #print(clock.get_fps())
     window.fill((255, 255, 255))
     if(loading):
 
@@ -149,11 +162,23 @@ while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.VIDEORESIZE:
+                SCREEN_WIDTH, SCREEN_HEIGHT = pygame.display.get_surface().get_size()
+                for enemy in enemies:
+                    removed = 0
+                    if not window.get_rect().collidepoint(enemy.getRect().center):
+                        #check if enemy is out of screen after resizing
+                        enemies.remove(enemy)
+                        removed += 1
+                    for x in range(removed):
+                        enemies.append(Enemy())
+
             if not dead:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if pygame.mouse.get_pressed(num_buttons=3)[0]:
                         pos = pygame.mouse.get_pos()
                         bullets.append(Bullet(*(x+50,y+50),True))
+                        shootsound.play()
         if(len(enemies) == 0):
             done = False
         if not done:
@@ -175,7 +200,7 @@ while run:
                     if player_rect.collidepoint(enemybullet.pos):
                         enemy.bullets.remove(enemybullet)
                         #dead rip
-                        dead = True
+                        dead = False
             enemy.draw(x,y)
             enemy.update(x,y)
 
@@ -189,6 +214,7 @@ while run:
                         except:
                             pass
                         enemies.remove(enemy)
+                        killsound.play()
                         kills += 1
                 if not window.get_rect().collidepoint(bullet.pos):
                     try:
