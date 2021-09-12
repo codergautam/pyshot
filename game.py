@@ -13,6 +13,9 @@ import easygui as g
 from pygame.constants import RESIZABLE
 
 pygame.init()
+myfont = pygame.font.Font('calibri.ttf', 30)
+overkillsfont = pygame.font.Font('calibri.ttf', 50)
+gameoverfont = pygame.font.Font('calibri.ttf', 100)
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -138,9 +141,7 @@ kills = 0
 while run:
     window.fill((255, 255, 255))
     if(loading):
-        myfont = pygame.font.SysFont('Calibri', 30)
-        overkillsfont = pygame.font.SysFont('Calibri', 50)
-        gameoverfont = pygame.font.SysFont('Calibri', 100)
+
         loading = False
     else:
         for event in pygame.event.get():
