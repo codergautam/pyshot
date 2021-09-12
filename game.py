@@ -149,8 +149,9 @@ while run:
                 run = False
             if not dead:
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = pygame.mouse.get_pos()
-                    bullets.append(Bullet(*(x+50,y+50),True))
+                    if pygame.mouse.get_pressed(num_buttons=3)[0]:
+                        pos = pygame.mouse.get_pos()
+                        bullets.append(Bullet(*(x+50,y+50),True))
         if(len(enemies) == 0):
             done = False
         if not done:
@@ -202,6 +203,21 @@ while run:
             w, h = pygame.display.get_surface().get_size()
             window.blit(textsurface,text_rect)
             window.blit(killsurface,kill_rect)
+            rect = pygame.Rect(0,0, SCREEN_WIDTH/5, SCREEN_HEIGHT/14)
+            rect.center = (SCREEN_WIDTH/2,SCREEN_HEIGHT/2 + SCREEN_HEIGHT/15)
+            if(rect.collidepoint(pygame.mouse.get_pos())):
+                pygame.draw.rect(window, (170, 170,170),rect)
+            else:
+                pygame.draw.rect(window, (211, 211,211),rect)
+            againsurface = myfont.render('Play Again', False, (0,0,0))
+            again_rect = againsurface.get_rect(center=(SCREEN_WIDTH/2,SCREEN_HEIGHT/2 + SCREEN_HEIGHT/15))
+            window.blit(againsurface,again_rect)
+            if pygame.mouse.get_pressed(num_buttons=3)[0] and rect.collidepoint(pygame.mouse.get_pos()):
+                kills = 0
+                bullets.clear()
+                enemies.clear()
+                dead = False
+            
         if not dead:
             textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
             window.blit(textsurface,(0,0))
