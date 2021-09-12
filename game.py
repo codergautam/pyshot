@@ -104,16 +104,16 @@ def rotate(x,y):
     key = pygame.key.get_pressed()
     speed = 5
     if(x > 0):
-        if key[pygame.K_a]:
+        if key[pygame.K_a] or key[pygame.K_LEFT]:
             player_rect.move_ip(-1*speed, 0)
     if(x<1180):
-        if key[ pygame.K_d]:
+        if key[pygame.K_d] or key[pygame.K_RIGHT]:
             player_rect.move_ip(speed, 0)
     if(y>0):
-        if key[pygame.K_w]:
+        if key[pygame.K_w] or key[pygame.K_UP]:
             player_rect.move_ip(0, -1*speed)
     if(y<620):
-        if key[pygame.K_s]:
+        if key[pygame.K_s] or key[pygame.K_DOWN]:
             player_rect.move_ip(0, speed)
     
     mx, my = pygame.mouse.get_pos()
@@ -133,12 +133,14 @@ enemies = []
 run = True
 done = False
 dead = False
-loading = True
+loading = False
+clock = pygame.time.Clock()
 
 x = 0
 y = 0
 kills = 0
 while run:
+    print(clock.get_fps())
     window.fill((255, 255, 255))
     if(loading):
 
@@ -164,35 +166,38 @@ while run:
             for enemybullet in enemy.bullets:
                 enemybullet.update()
                 if not window.get_rect().collidepoint(enemybullet.pos):
-                    enemy.bullets.remove(enemybullet)
+                    try:
+                        enemy.bullets.remove(enemybullet)
+                    except:
+                        pass
                 else:
                     enemybullet.draw(window)
-                if player_rect.collidepoint(enemybullet.pos):
-                    enemy.bullets.remove(enemybullet)
-                    #dead rip
-                    dead = True
+                    if player_rect.collidepoint(enemybullet.pos):
+                        enemy.bullets.remove(enemybullet)
+                        #dead rip
+                        dead = True
             enemy.draw(x,y)
             enemy.update(x,y)
 
         for bullet in bullets[:]:
-            bullet.update()
-            for enemy in enemies:
-                if enemy.isColliding(bullet.pos):
+            if not dead:
+                bullet.update()
+                for enemy in enemies:
+                    if enemy.isColliding(bullet.pos):
+                        try:
+                            bullets.remove(bullet)
+                        except:
+                            pass
+                        enemies.remove(enemy)
+                        kills += 1
+                if not window.get_rect().collidepoint(bullet.pos):
                     try:
                         bullets.remove(bullet)
                     except:
                         pass
-                    enemies.remove(enemy)
-                    kills += 1
-            if not window.get_rect().collidepoint(bullet.pos):
-                try:
-                    bullets.remove(bullet)
-                except:
-                    pass
-
-        for bullet in bullets:
-            bullet.draw(window)
-        if not dead:        
+        if not dead:               
+            for bullet in bullets:
+                bullet.draw(window)       
             x,y,player_rect = rotate(x,y)
         else:
 
@@ -222,6 +227,7 @@ while run:
             textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
             window.blit(textsurface,(0,0))
     pygame.display.flip()
+    clock.tick(60)
 
 pygame.quit()
 exit()
