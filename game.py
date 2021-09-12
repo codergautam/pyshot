@@ -247,7 +247,7 @@ while run:
                 kills = 0
                 bullets.clear()
                 enemies.clear()
-                dead = False
+                dead = True
             
         if not dead:
             textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
