@@ -200,7 +200,7 @@ while run:
                     if player_rect.collidepoint(enemybullet.pos):
                         enemy.bullets.remove(enemybullet)
                         #dead rip
-                        dead = False
+                        dead = True
             enemy.draw(x,y)
             enemy.update(x,y)
 
@@ -247,7 +247,7 @@ while run:
                 kills = 0
                 bullets.clear()
                 enemies.clear()
-                dead = True
+                dead = False
             
         if not dead:
             textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
