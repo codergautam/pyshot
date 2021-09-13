@@ -4,11 +4,7 @@ import math
 import pygame
 import os
 import random
-
 import time
-
-from pygame.image import load
-import easygui as g
 
 from pygame.constants import RESIZABLE
 
@@ -60,7 +56,7 @@ class Enemy:
         
         enemy_rect.left = self.pos[0]
         enemy_rect.top = self.pos[1]
- 
+
         #px, py = player x player y
         dx, dy = px - enemy_rect.centerx, py - enemy_rect.centery
         angle = math.degrees(math.atan2(-dy, dx)) - correction_angle
@@ -98,9 +94,8 @@ class Bullet:
         self.speed = 10
 
     def update(self):  
-       
         self.pos = (self.pos[0]+self.dir[0]*self.speed, 
-                   self.pos[1]+self.dir[1]*self.speed)
+                self.pos[1]+self.dir[1]*self.speed)
 
     def draw(self, surf):
         bullet_rect = self.bullet.get_rect(center = self.pos)
@@ -172,6 +167,11 @@ while run:
                         removed += 1
                     for x in range(removed):
                         enemies.append(Enemy())
+                try:
+                    if window.get_rect().collidepoint(player_rect.center):
+                        player_rect.center = (0,0)
+                except:
+                    pass
 
             if not dead:
                 if event.type == pygame.MOUSEBUTTONDOWN:
