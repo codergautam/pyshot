@@ -18,8 +18,8 @@ SCREEN_HEIGHT = infoObject.current_h
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), RESIZABLE)
 player = pygame.transform.smoothscale(pygame.image.load("square.png").convert_alpha(), (100, 100))
 
-enemyshootsound = pygame.mixer.Sound(file="enemyshoot.mp3")
-shootsound = pygame.mixer.Sound(file="shoot.mp3")
+enemyshootsound = pygame.mixer.Sound(file="enemyshoot.ogg")
+shootsound = pygame.mixer.Sound(file="shoot.ogg")
 killsound = pygame.mixer.Sound(file="kill.ogg")
     
 class Enemy:
@@ -91,7 +91,10 @@ class Bullet:
         else:
             self.bullet.fill((255, 51, 51))
         self.bullet = pygame.transform.rotate(self.bullet, angle)
-        self.speed = 10
+        try:
+          self.speed =  600/clock.get_fps()
+        except:
+          self.speed = 10
 
     def update(self):  
         self.pos = (self.pos[0]+self.dir[0]*self.speed, 
@@ -110,7 +113,10 @@ def rotate(x,y):
     player_rect.top = y
 
     key = pygame.key.get_pressed()
-    speed = 5
+    try:
+      speed = 300/clock.get_fps()
+    except:
+      speed = 5
     if(x > 0):
         if key[pygame.K_a] or key[pygame.K_LEFT]:
             player_rect.move_ip(-1*speed, 0)
@@ -253,7 +259,7 @@ while run:
             textsurface = myfont.render('Kills: '+str(kills), False, (0, 0, 0))
             window.blit(textsurface,(0,0))
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(120)
 
 pygame.quit()
 exit()
