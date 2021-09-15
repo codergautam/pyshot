@@ -3,23 +3,24 @@ import pygame
 import os
 import random
 import time
+from Bullet import Bullet
 
 from pygame.constants import RESIZABLE
 
 pygame.init()
-myfont = pygame.font.Font('calibri.ttf', 30)
-overkillsfont = pygame.font.Font('calibri.ttf', 50)
-gameoverfont = pygame.font.Font('calibri.ttf', 100)
+myfont = pygame.font.Font('assets/calibri.ttf', 30)
+overkillsfont = pygame.font.Font('assets/calibri.ttf', 50)
+gameoverfont = pygame.font.Font('assets/calibri.ttf', 100)
 infoObject = pygame.display.Info()
 SCREEN_WIDTH = infoObject.current_w
 SCREEN_HEIGHT = infoObject.current_h
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), RESIZABLE)
 player = pygame.transform.smoothscale(
-    pygame.image.load("square.png").convert_alpha(), (100, 100))
+    pygame.image.load("assets/square.png").convert_alpha(), (100, 100))
 
-enemyshootsound = pygame.mixer.Sound(file="enemyshoot.ogg")
-shootsound = pygame.mixer.Sound(file="shoot.ogg")
-killsound = pygame.mixer.Sound(file="kill.ogg")
+enemyshootsound = pygame.mixer.Sound(file="assets/enemyshoot.ogg")
+shootsound = pygame.mixer.Sound(file="assets/shoot.ogg")
+killsound = pygame.mixer.Sound(file="assets/kill.ogg")
 
 class Enemy:
     def __init__(self):
@@ -27,7 +28,7 @@ class Enemy:
                     random.randint(75, SCREEN_HEIGHT - 75))
         #print (self.pos)
         self.enemy = pygame.transform.smoothscale(
-            pygame.image.load("enemy.png").convert_alpha(), (50, 50))
+            pygame.image.load("assets/enemy.png").convert_alpha(), (50, 50))
         self.bullets = []
         self.lastUpdate = time.time()
 
@@ -130,40 +131,6 @@ class Enemy:
          
 
 
-class Bullet:
-    def __init__(self, x, y, player, px=False, py=False):
-        self.pos = (x, y)
-        self.player = player
-        if player:
-            mx, my = pygame.mouse.get_pos()
-        else:
-            mx, my = px, py
-        self.dir = (mx - x, my - y)
-        length = math.hypot(*self.dir)
-        if length == 0.0:
-            self.dir = (0, -1)
-        else:
-            self.dir = (self.dir[0] / length, self.dir[1] / length)
-        angle = math.degrees(math.atan2(-self.dir[1], self.dir[0]))
-
-        self.bullet = pygame.Surface((10, 4)).convert_alpha()
-        if player:
-            self.bullet.fill((51, 230, 255))
-        else:
-            self.bullet.fill((255, 51, 51))
-        self.bullet = pygame.transform.rotate(self.bullet, angle)
-        try:
-            self.speed = 600 / clock.get_fps()
-        except:
-            self.speed = 10
-
-    def update(self):
-        self.pos = (self.pos[0] + self.dir[0] * self.speed,
-                    self.pos[1] + self.dir[1] * self.speed)
-
-    def draw(self, surf):
-        bullet_rect = self.bullet.get_rect(center=self.pos)
-        surf.blit(self.bullet, bullet_rect)
 
 
 def rotate(x, y):
@@ -236,7 +203,7 @@ x = 0
 y = 0
 kills = 0
 centerpos = (x+50, y+50)
-
+bulletcount = 5
 while run:
     #print(clock.get_fps())
     window.fill((255,255,255))
@@ -268,9 +235,11 @@ while run:
             if not dead:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if pygame.mouse.get_pressed(num_buttons=3)[0]:
-                        pos = pygame.mouse.get_pos()
-                        bullets.append(Bullet(*(x + 50, y + 50), True))
-                        shootsound.play()
+                      #if bulletcount > 1:
+                      pos = pygame.mouse.get_pos()
+                      bulletcount -= 1
+                      bullets.append(Bullet(*(x + 50, y + 50), True))
+                      shootsound.play()
         if (len(enemies) == 0):
             done = False
         if not done:
@@ -309,6 +278,7 @@ while run:
                             pass
                         enemies.remove(enemy)
                         killsound.play()
+                        #bulletcount += 1
                         kills += 1
                 if not window.get_rect().collidepoint(bullet.pos):
                     try:
@@ -352,6 +322,7 @@ while run:
                 kills = 0
                 bullets.clear()
                 enemies.clear()
+                #bulletcount = 5
                 dead = False
 
         if not dead:
