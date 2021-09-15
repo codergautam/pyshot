@@ -260,7 +260,7 @@ while run:
                     if player_rect.collidepoint(enemybullet.pos):
                         enemy.bullets.remove(enemybullet)
                         #dead rip
-                        #dead = True
+                        dead = True
             enemy.draw(x, y)
             
             enemy.update(x, y)
