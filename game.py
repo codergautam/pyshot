@@ -31,7 +31,7 @@ class Enemy:
         self.bullets = []
         self.lastUpdate = time.time()
         self.random = random.randint(10, 50) / 10
-        self.speed = 2.5
+        self.speed = 1.5
         self.centerpos = (self.pos[0]+50, self.pos[1]+50)
 
     def isColliding(self, point):
@@ -44,7 +44,7 @@ class Enemy:
 
     def update(self, px, py):
         try:
-            speed = 150 / clock.get_fps()
+            speed = 90 / clock.get_fps()
         except:
             speed = 2.5
         if (time.time() >= self.random + self.lastUpdate):
