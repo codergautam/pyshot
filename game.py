@@ -56,7 +56,7 @@ class Enemy:
         try:
           if kills < 10:
             self.speed = 0
-            print("speed = 0")
+            #print("speed = 0")
           elif kills < 30:
             self.speed = 45 / clock.get_fps()
         except:
@@ -182,13 +182,13 @@ def rotate(x, y):
     if (x > 0):
         if key[pygame.K_a] or key[pygame.K_LEFT]:
             player_rect.move_ip(-1 * speed, 0)
-    if (x < SCREEN_WIDTH - 100):
+    if (x < SCREEN_WIDTH - 110):
         if key[pygame.K_d] or key[pygame.K_RIGHT]:
             player_rect.move_ip(speed, 0)
     if (y > 0):
         if key[pygame.K_w] or key[pygame.K_UP]:
             player_rect.move_ip(0, -1 * speed)
-    if (y < SCREEN_HEIGHT - 100):
+    if (y < SCREEN_HEIGHT - 110):
         if key[pygame.K_s] or key[pygame.K_DOWN]:
             player_rect.move_ip(0, speed)
 
