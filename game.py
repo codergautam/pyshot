@@ -31,7 +31,7 @@ class Enemy:
         self.bullets = []
         self.lastUpdate = time.time()
         self.random = random.randint(10, 50) / 10
-        self.speed = 1
+        self.speed = 2.5
         self.centerpos = (self.pos[0]+50, self.pos[1]+50)
 
     def isColliding(self, point):
@@ -43,6 +43,10 @@ class Enemy:
         enemyshootsound.play()
 
     def update(self, px, py):
+        try:
+            speed = 150 / clock.get_fps()
+        except:
+            speed = 2.5
         if (time.time() >= self.random + self.lastUpdate):
             self.shoot(px, py)
             self.lastUpdate = time.time()
@@ -80,7 +84,7 @@ class Enemy:
 
     def move_towards_player(self, player_position):
         enemy_position = list(self.centerpos)
-        print(self.pos, enemy_position)
+        #print(self.pos, enemy_position)
 
         if(enemy_position[0] < player_position[0]):
           enemy_position[0] += self.speed
