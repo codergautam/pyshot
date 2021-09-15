@@ -30,27 +30,41 @@ class Enemy:
             pygame.image.load("enemy.png").convert_alpha(), (50, 50))
         self.bullets = []
         self.lastUpdate = time.time()
-        self.random = random.randint(10, 50) / 10
+
+        self.random = random.randint(10, 30) / 10
         self.speed = 1.5
         self.centerpos = (self.pos[0]+50, self.pos[1]+50)
 
     def isColliding(self, point):
         return self.rect.collidepoint(point)
 
+    def getRand(self,kills):
+      if kills < 10:
+        return random.randint(5, 30) / 10
+      elif kills < 30:
+        return random.randint(5,15)/10
+      else:
+        return random.randint(1,10)/10
+        
+
     def shoot(self, px, py):
         self.bullets.append(
             Bullet(*(self.pos[0] + 50, self.pos[1] + 50), False, px, py))
         enemyshootsound.play()
 
-    def update(self, px, py):
+    def update(self, px, py, kills):
         try:
-            speed = 90 / clock.get_fps()
+          if kills < 10:
+            self.speed = 0
+            print("speed = 0")
+          elif kills < 30:
+            self.speed = 45 / clock.get_fps()
         except:
-            speed = 2.5
+          pass
         if (time.time() >= self.random + self.lastUpdate):
             self.shoot(px, py)
             self.lastUpdate = time.time()
-            self.random = random.randint(5, 15) / 10
+            self.random = self.getRand(kills)
         
         
         #getrekt
@@ -76,6 +90,7 @@ class Enemy:
         rot_image = pygame.transform.rotate(self.enemy, angle)
         rot_image_rect = rot_image.get_rect(center=enemy_rect.center)
         self.rect = rot_image_rect
+        #if kills > 10:
         self.move_towards_player((px+50, py+50))
 
         
@@ -85,16 +100,30 @@ class Enemy:
     def move_towards_player(self, player_position):
         enemy_position = list(self.centerpos)
         #print(self.pos, enemy_position)
+        change = 0
+        if(enemy_position[0] < player_position[0]):
+          change += 1
+        if(enemy_position[0] > player_position[0]):
+          change += 1
+        if(enemy_position[1] < player_position[1]):
+          change += 1
+        if(enemy_position[1] > player_position[1]):
+          change += 1
+        
+        if change > 1:
+          speed = self.speed / 2
+        else:
+          speed = self.speed
 
         if(enemy_position[0] < player_position[0]):
-          enemy_position[0] += self.speed
+          enemy_position[0] += speed
         if(enemy_position[0] > player_position[0]):
-          enemy_position[0] -= self.speed
+          enemy_position[0] -= speed
         if(enemy_position[1] < player_position[1]):
-          enemy_position[1] += self.speed
+          enemy_position[1] += speed
         if(enemy_position[1] > player_position[1]):
-          enemy_position[1] -= self.speed
-        
+          enemy_position[1] -=  speed
+
         self.pos = (enemy_position[0]-50, enemy_position[1]-50)
         self.centerpos = tuple(enemy_position)
       
@@ -210,7 +239,7 @@ centerpos = (x+50, y+50)
 
 while run:
     #print(clock.get_fps())
-    window.fill((255, 255, 255))
+    window.fill((255,255,255))
     if (loading):
 
         loading = False
@@ -267,7 +296,7 @@ while run:
                         dead = True
             enemy.draw(x, y)
             
-            enemy.update(x, y)
+            enemy.update(x, y, kills)
 
         for bullet in bullets[:]:
             if not dead:
