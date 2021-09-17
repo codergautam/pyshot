@@ -286,6 +286,12 @@ while run:
             enemy.draw(x, y)
             
             enemy.update(x, y, kills)
+        
+        if(random.randint(1,(round(clock.get_fps())*20)+1) == 5):
+            pickups.append(Pickup("bullet", (random.randint(50, SCREEN_WIDTH - 50),
+                    random.randint(50, SCREEN_HEIGHT - 50)), bulletpick, pick))
+
+
 
         for bullet in bullets[:]:
             if not dead:
