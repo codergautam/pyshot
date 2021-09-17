@@ -1,6 +1,5 @@
 import math
 import pygame
-
 class Bullet:
     def __init__(self, x, y, player, px=False, py=False):
         self.pos = (x, y)

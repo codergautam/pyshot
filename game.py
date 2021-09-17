@@ -3,6 +3,7 @@ import pygame
 import os
 import random
 import time
+from Bullet import Bullet
 
 from Bullet import Bullet
 from Pickup import Pickup
