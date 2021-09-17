@@ -286,7 +286,10 @@ while run:
             enemy.draw(x, y)
             
             enemy.update(x, y, kills)
-        
+        def pick():
+            global bulletcount
+            bulletcount += 1
+            bulletpicksound.play()       
         if(random.randint(1,(round(clock.get_fps())*20)+1) == 5):
             pickups.append(Pickup("bullet", (random.randint(50, SCREEN_WIDTH - 50),
                     random.randint(50, SCREEN_HEIGHT - 50)), bulletpick, pick))
@@ -302,11 +305,7 @@ while run:
                             bullets.remove(bullet)
                         except:
                             pass
-                        
-                        def pick():
-                          global bulletcount
-                          bulletcount += 1
-                          bulletpicksound.play()
+                    
 
                         pickups.append(Pickup("bullet", enemy.centerpos, bulletpick, pick))
                         enemies.remove(enemy)
@@ -374,7 +373,7 @@ while run:
                                     (0, 0, 0))
         window.blit(fpstext, (SCREEN_WIDTH-SCREEN_WIDTH/5, SCREEN_HEIGHT-100))
     pygame.display.flip()
-    clock.tick(120)
+    clock.tick(999)
 
 pygame.quit()
 exit()
