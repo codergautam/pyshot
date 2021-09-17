@@ -4,22 +4,29 @@ import os
 import random
 import time
 
+from Bullet import Bullet
+from Pickup import Pickup
+
 from pygame.constants import RESIZABLE
 
 pygame.init()
-myfont = pygame.font.Font('calibri.ttf', 30)
-overkillsfont = pygame.font.Font('calibri.ttf', 50)
-gameoverfont = pygame.font.Font('calibri.ttf', 100)
+myfont = pygame.font.Font('assets/calibri.ttf', 30)
+overkillsfont = pygame.font.Font('assets/calibri.ttf', 50)
+gameoverfont = pygame.font.Font('assets/calibri.ttf', 100)
 infoObject = pygame.display.Info()
 SCREEN_WIDTH = infoObject.current_w
 SCREEN_HEIGHT = infoObject.current_h
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), RESIZABLE)
-player = pygame.transform.smoothscale(
-    pygame.image.load("square.png").convert_alpha(), (100, 100))
 
-enemyshootsound = pygame.mixer.Sound(file="enemyshoot.ogg")
-shootsound = pygame.mixer.Sound(file="shoot.ogg")
-killsound = pygame.mixer.Sound(file="kill.ogg")
+player = pygame.transform.smoothscale(pygame.image.load("assets/square.png").convert_alpha(), (100, 100))
+bulleticon = pygame.transform.smoothscale(pygame.image.load("assets/bullet.png").convert_alpha(), (150, 150))
+bulletpick = pygame.transform.smoothscale(pygame.image.load("assets/bullet.png").convert_alpha(), (50, 50))
+
+enemyshootsound = pygame.mixer.Sound(file="assets/enemyshoot.ogg")
+bulletpicksound = pygame.mixer.Sound(file="assets/bulletpick.ogg")
+shootsound = pygame.mixer.Sound(file="assets/shoot.ogg")
+killsound = pygame.mixer.Sound(file="assets/kill.ogg")
+emptysound = pygame.mixer.Sound(file="assets/empty.ogg")
 
 class Enemy:
     def __init__(self):
@@ -27,30 +34,44 @@ class Enemy:
                     random.randint(75, SCREEN_HEIGHT - 75))
         #print (self.pos)
         self.enemy = pygame.transform.smoothscale(
-            pygame.image.load("enemy.png").convert_alpha(), (50, 50))
+            pygame.image.load("assets/enemy.png").convert_alpha(), (50, 50))
         self.bullets = []
         self.lastUpdate = time.time()
-        self.random = random.randint(10, 50) / 10
+
+        self.random = random.randint(10, 30) / 10
         self.speed = 1.5
         self.centerpos = (self.pos[0]+50, self.pos[1]+50)
 
     def isColliding(self, point):
         return self.rect.collidepoint(point)
 
+    def getRand(self,kills):
+      if kills < 10:
+        return random.randint(5, 30) / 10
+      elif kills < 30:
+        return random.randint(5,15)/10
+      else:
+        return random.randint(1,10)/10
+        
+
     def shoot(self, px, py):
         self.bullets.append(
             Bullet(*(self.pos[0] + 50, self.pos[1] + 50), False, px, py))
         enemyshootsound.play()
 
-    def update(self, px, py):
+    def update(self, px, py, kills):
         try:
-            speed = 90 / clock.get_fps()
+          if kills < 10:
+            self.speed = 0
+            #print("speed = 0")
+          elif kills < 30:
+            self.speed = 45 / clock.get_fps()
         except:
-            speed = 2.5
+          pass
         if (time.time() >= self.random + self.lastUpdate):
             self.shoot(px, py)
             self.lastUpdate = time.time()
-            self.random = random.randint(5, 15) / 10
+            self.random = self.getRand(kills)
         
         
         #getrekt
@@ -76,6 +97,7 @@ class Enemy:
         rot_image = pygame.transform.rotate(self.enemy, angle)
         rot_image_rect = rot_image.get_rect(center=enemy_rect.center)
         self.rect = rot_image_rect
+        #if kills > 10:
         self.move_towards_player((px+50, py+50))
 
         
@@ -85,56 +107,36 @@ class Enemy:
     def move_towards_player(self, player_position):
         enemy_position = list(self.centerpos)
         #print(self.pos, enemy_position)
+        change = 0
+        if(enemy_position[0] < player_position[0]):
+          change += 1
+        if(enemy_position[0] > player_position[0]):
+          change += 1
+        if(enemy_position[1] < player_position[1]):
+          change += 1
+        if(enemy_position[1] > player_position[1]):
+          change += 1
+        
+        if change > 1:
+          speed = self.speed / 2
+        else:
+          speed = self.speed
 
         if(enemy_position[0] < player_position[0]):
-          enemy_position[0] += self.speed
+          enemy_position[0] += speed
         if(enemy_position[0] > player_position[0]):
-          enemy_position[0] -= self.speed
+          enemy_position[0] -= speed
         if(enemy_position[1] < player_position[1]):
-          enemy_position[1] += self.speed
+          enemy_position[1] += speed
         if(enemy_position[1] > player_position[1]):
-          enemy_position[1] -= self.speed
-        
+          enemy_position[1] -=  speed
+
         self.pos = (enemy_position[0]-50, enemy_position[1]-50)
         self.centerpos = tuple(enemy_position)
       
          
 
 
-class Bullet:
-    def __init__(self, x, y, player, px=False, py=False):
-        self.pos = (x, y)
-        self.player = player
-        if player:
-            mx, my = pygame.mouse.get_pos()
-        else:
-            mx, my = px, py
-        self.dir = (mx - x, my - y)
-        length = math.hypot(*self.dir)
-        if length == 0.0:
-            self.dir = (0, -1)
-        else:
-            self.dir = (self.dir[0] / length, self.dir[1] / length)
-        angle = math.degrees(math.atan2(-self.dir[1], self.dir[0]))
-
-        self.bullet = pygame.Surface((10, 4)).convert_alpha()
-        if player:
-            self.bullet.fill((51, 230, 255))
-        else:
-            self.bullet.fill((255, 51, 51))
-        self.bullet = pygame.transform.rotate(self.bullet, angle)
-        try:
-            self.speed = 600 / clock.get_fps()
-        except:
-            self.speed = 10
-
-    def update(self):
-        self.pos = (self.pos[0] + self.dir[0] * self.speed,
-                    self.pos[1] + self.dir[1] * self.speed)
-
-    def draw(self, surf):
-        bullet_rect = self.bullet.get_rect(center=self.pos)
-        surf.blit(self.bullet, bullet_rect)
 
 
 def rotate(x, y):
@@ -153,13 +155,13 @@ def rotate(x, y):
     if (x > 0):
         if key[pygame.K_a] or key[pygame.K_LEFT]:
             player_rect.move_ip(-1 * speed, 0)
-    if (x < SCREEN_WIDTH - 100):
+    if (x < SCREEN_WIDTH - 110):
         if key[pygame.K_d] or key[pygame.K_RIGHT]:
             player_rect.move_ip(speed, 0)
     if (y > 0):
         if key[pygame.K_w] or key[pygame.K_UP]:
             player_rect.move_ip(0, -1 * speed)
-    if (y < SCREEN_HEIGHT - 100):
+    if (y < SCREEN_HEIGHT - 110):
         if key[pygame.K_s] or key[pygame.K_DOWN]:
             player_rect.move_ip(0, speed)
 
@@ -197,6 +199,8 @@ def enemiesNeeded(kills):
 
 bullets = []
 enemies = []
+pickups = []
+
 run = True
 done = False
 dead = False
@@ -207,10 +211,10 @@ x = 0
 y = 0
 kills = 0
 centerpos = (x+50, y+50)
-
+bulletcount = 5
 while run:
     #print(clock.get_fps())
-    window.fill((255, 255, 255))
+    window.fill((255,255,255))
     if (loading):
 
         loading = False
@@ -239,9 +243,15 @@ while run:
             if not dead:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if pygame.mouse.get_pressed(num_buttons=3)[0]:
+                      if bulletcount > 0:
                         pos = pygame.mouse.get_pos()
+                        bulletcount -= 1
+                       
                         bullets.append(Bullet(*(x + 50, y + 50), True))
                         shootsound.play()
+                      else:
+                        emptysound.play()
+
         if (len(enemies) == 0):
             done = False
         if not done:
@@ -250,10 +260,14 @@ while run:
                 enemies.append(Enemy())
             else:
                 done = True
-
+        for pickupobj in pickups:
+            
+          pickupobj.update(window, player_rect)
+          if(pickupobj.visible == False):
+            pickups.remove(pickupobj)
         for enemy in enemies:
             for enemybullet in enemy.bullets:
-                enemybullet.update()
+                enemybullet.update(clock.get_fps())
                 if not window.get_rect().collidepoint(enemybullet.pos):
                     try:
                         enemy.bullets.remove(enemybullet)
@@ -267,19 +281,29 @@ while run:
                         dead = True
             enemy.draw(x, y)
             
-            enemy.update(x, y)
+            enemy.update(x, y, kills)
 
         for bullet in bullets[:]:
             if not dead:
-                bullet.update()
+                bullet.update(clock.get_fps())
                 for enemy in enemies:
                     if enemy.isColliding(bullet.pos):
                         try:
                             bullets.remove(bullet)
                         except:
                             pass
+                        
+                        def pick():
+                          global bulletcount
+                          bulletcount += 1
+                          bulletpicksound.play()
+
+                        pickups.append(Pickup("bullet", enemy.centerpos, bulletpick, pick))
                         enemies.remove(enemy)
+                        
+
                         killsound.play()
+                        #bulletcount += 1
                         kills += 1
                 if not window.get_rect().collidepoint(bullet.pos):
                     try:
@@ -321,15 +345,24 @@ while run:
                     num_buttons=3)[0] and rect.collidepoint(
                         pygame.mouse.get_pos()):
                 kills = 0
+                pickups.clear()
                 bullets.clear()
                 enemies.clear()
+                bulletcount = 5
                 dead = False
 
         if not dead:
             textsurface = myfont.render('Kills: ' + str(kills), False,
                                         (0, 0, 0))
             window.blit(textsurface, (0, 0))
-    
+            killsurface = gameoverfont.render(str(bulletcount), False, (0, 0, 0))
+            kill_rect = killsurface.get_rect(center=(SCREEN_WIDTH / 2+SCREEN_WIDTH/35,SCREEN_HEIGHT / 1.2 - SCREEN_HEIGHT / 20))
+            window.blit(killsurface,kill_rect)
+            bullet_rect = bulleticon.get_rect(center=(SCREEN_WIDTH / 2-SCREEN_WIDTH/35,SCREEN_HEIGHT / 1.2 - SCREEN_HEIGHT / 15))
+            window.blit(bulleticon, bullet_rect)
+        fpstext = myfont.render('FPS: ' + str(round(clock.get_fps())), False,
+                                    (0, 0, 0))
+        window.blit(fpstext, (SCREEN_WIDTH-SCREEN_WIDTH/5, SCREEN_HEIGHT-100))
     pygame.display.flip()
     clock.tick(120)
 
