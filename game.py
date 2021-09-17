@@ -28,6 +28,7 @@ bulletpicksound = pygame.mixer.Sound(file="assets/bulletpick.ogg")
 shootsound = pygame.mixer.Sound(file="assets/shoot.ogg")
 killsound = pygame.mixer.Sound(file="assets/kill.ogg")
 emptysound = pygame.mixer.Sound(file="assets/empty.ogg")
+deathsound = pygame.mixer.Sound(file="assets/death.ogg")
 
 class Enemy:
     def __init__(self):
@@ -277,9 +278,11 @@ while run:
                 else:
                     enemybullet.draw(window)
                     if player_rect.collidepoint(enemybullet.pos):
-                        enemy.bullets.remove(enemybullet)
-                        #dead rip
-                        dead = True
+                        if not dead:
+                            enemy.bullets.remove(enemybullet)
+                            deathsound.play()
+                            #dead rip
+                            dead = True
             enemy.draw(x, y)
             
             enemy.update(x, y, kills)
