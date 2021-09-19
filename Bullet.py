@@ -1,9 +1,12 @@
 import math
 import pygame
+
+
 class Bullet:
     def __init__(self, x, y, player, px=False, py=False):
         self.pos = (x, y)
         self.player = player
+        self.speed = None
         if player:
             mx, my = pygame.mouse.get_pos()
         else:
@@ -23,11 +26,10 @@ class Bullet:
             self.bullet.fill((255, 51, 51))
         self.bullet = pygame.transform.rotate(self.bullet, angle)
 
-
     def update(self, fps):
         try:
             self.speed = 600 / fps
-        except:
+        except ZeroDivisionError:
             self.speed = 6
         self.pos = (self.pos[0] + self.dir[0] * self.speed,
                     self.pos[1] + self.dir[1] * self.speed)
