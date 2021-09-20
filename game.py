@@ -50,9 +50,19 @@ class Enemy:
     @staticmethod
     def get_rand():
         if kills < 10:
-            return random.randint(5, 30) / 10
+            return random.randint(20, 50) / 10
+        elif kills < 20:
+          return random.randint(10,50) / 10
         elif kills < 30:
-            return random.randint(5, 15) / 10
+            return random.randint(5, 50) / 10
+        elif kills < 40:
+            return random.randint(10, 30) / 10
+        elif kills < 60:
+          return random.randint(5, 30) / 10
+        elif kills < 75:
+          return random.randint(5, 20) / 10
+        elif kills < 90:
+          return random.randint(3, 20) / 10
         else:
             return random.randint(1, 10) / 10
 
