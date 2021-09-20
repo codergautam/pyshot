@@ -143,21 +143,30 @@ def rotate():
 
     key = pygame.key.get_pressed()
     try:
-        speed = 300 / clock.get_fps()
+        speed = 450 / clock.get_fps()
     except ZeroDivisionError:
-        speed = 5
-    if x > 0:
-        if key[pygame.K_a] or key[pygame.K_LEFT]:
-            rect_player.move_ip(-1 * speed, 0)
-    if x < SCREEN_WIDTH - 110:
-        if key[pygame.K_d] or key[pygame.K_RIGHT]:
-            rect_player.move_ip(speed, 0)
-    if y > 0:
-        if key[pygame.K_w] or key[pygame.K_UP]:
-            rect_player.move_ip(0, -1 * speed)
-    if y < SCREEN_HEIGHT - 110:
-        if key[pygame.K_s] or key[pygame.K_DOWN]:
-            rect_player.move_ip(0, speed)
+        speed = 7.5
+
+    left = key[pygame.K_a] or key[pygame.K_LEFT]
+    right = key[pygame.K_d] or key[pygame.K_RIGHT]
+    up = key[pygame.K_w] or key[pygame.K_UP]
+    down = key[pygame.K_s] or key[pygame.K_DOWN]
+
+    x_unit = -1.0 if left else 1.0 if right else 0.0
+    y_unit = -1.0 if up else 1.0 if down else 0.0
+
+    if not (not x_unit and not y_unit):
+        magnitude = (x_unit ** 2 + y_unit ** 2) ** 0.5
+        x_dis = x_unit / magnitude * speed
+        y_dis = y_unit / magnitude * speed
+
+        x_min, x_max = 0, SCREEN_WIDTH - 110
+        x_dis = max(x_min, min(x_max, x + x_dis)) - x
+
+        y_min, y_max = 0, SCREEN_HEIGHT - 110
+        y_dis = max(y_min, min(y_max, y + y_dis)) - y
+
+        rect_player.move_ip(x_dis, y_dis)
 
     mx, my = pygame.mouse.get_pos()
     dx, dy = mx - rect_player.centerx, my - rect_player.centery
@@ -286,7 +295,8 @@ while run:
             bullet_pick_sound.play()
 
 
-        if random.randint(1, (round(clock.get_fps()) * 20) + 1) == 5:
+        if (bullet_count < 3 and random.randint(1, (round(clock.get_fps()) * 20) + 1) == 5) or (
+                bullet_count == 0 and random.randint(1, (round(clock.get_fps()) * 5) + 1) == 5):
             pickups.append(Pickup("bullet", (random.randint(50, SCREEN_WIDTH - 50),
                                              random.randint(50, SCREEN_HEIGHT - 50)), bullet_pick, pick))
 
