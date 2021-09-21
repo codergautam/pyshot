@@ -52,17 +52,17 @@ class Enemy:
         if kills < 10:
             return random.randint(20, 50) / 10
         elif kills < 20:
-          return random.randint(10,50) / 10
+            return random.randint(10, 50) / 10
         elif kills < 30:
             return random.randint(5, 50) / 10
         elif kills < 40:
             return random.randint(10, 30) / 10
         elif kills < 60:
-          return random.randint(5, 30) / 10
+            return random.randint(5, 30) / 10
         elif kills < 75:
-          return random.randint(5, 20) / 10
+            return random.randint(5, 20) / 10
         elif kills < 90:
-          return random.randint(3, 20) / 10
+            return random.randint(3, 20) / 10
         else:
             return random.randint(1, 10) / 10
 
@@ -190,24 +190,10 @@ def rotate():
 
 
 def get_num_enemies():
-    needed = 1
-    if kills == 1:
-        needed = 2
-    if kills == 3:
-        needed = 3
-    if kills == 6:
-        needed = 4
-
-    if kills == 10:
-        needed = 1
-    if kills == 11:
-        needed = 2
-    if kills == 13:
-        needed = 3
-    if kills == 16:
-        needed = 4
-
-    return needed - 1
+    #time.sleep(1)
+    waves_enemy = [1, 1, 2, 2, 3]
+    print(wave)
+    return waves_enemy[wave - 1] - 1
 
 
 bullets = []
@@ -222,9 +208,13 @@ clock = pygame.time.Clock()
 
 x = 0
 y = 0
-kills = 0
-center_pos = (x + 50, y + 50)
 bullet_count = 5
+
+kills = 0
+wave = 1
+
+center_pos = (x + 50, y + 50)
+
 while run:
     # print(clock.get_fps())
     window.fill((255, 255, 255))
@@ -322,6 +312,8 @@ while run:
 
                         pickups.append(Pickup("bullet", enemy.center_pos, bullet_pick, pick))
                         enemies.remove(enemy)
+                        if len(enemies) == 0:
+                            wave += 1
 
                         kill_sound.play()
                         # bullet_count += 1
@@ -364,6 +356,7 @@ while run:
             window.blit(again_surface, again_rect)
             if pygame.mouse.get_pressed(num_buttons=3)[0] and rect.collidepoint(pygame.mouse.get_pos()):
                 kills = 0
+                wave = 0
                 pickups.clear()
                 bullets.clear()
                 enemies.clear()
