@@ -190,11 +190,13 @@ def rotate():
 
 
 def get_num_enemies():
-    #time.sleep(1)
+    global win
     waves_enemy = [1, 1, 2, 2, 3]
-    print(wave)
-    return waves_enemy[wave - 1] - 1
-
+    try:
+        return waves_enemy[wave - 1] - 1
+    except IndexError:
+        win = True
+        return -1
 
 bullets = []
 enemies = []
@@ -203,6 +205,7 @@ pickups = []
 run = True
 done = False
 dead = False
+win = False
 loading = False
 clock = pygame.time.Clock()
 
@@ -356,7 +359,7 @@ while run:
             window.blit(again_surface, again_rect)
             if pygame.mouse.get_pressed(num_buttons=3)[0] and rect.collidepoint(pygame.mouse.get_pos()):
                 kills = 0
-                wave = 0
+                wave = 1
                 pickups.clear()
                 bullets.clear()
                 enemies.clear()
