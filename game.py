@@ -2,6 +2,8 @@ import math
 import random
 import time
 
+from threading import Timer
+
 import pygame
 from pygame.constants import RESIZABLE
 
@@ -20,6 +22,7 @@ window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), RESIZABLE)
 player = pygame.transform.smoothscale(pygame.image.load("assets/square.png").convert_alpha(), (100, 100))
 bullet_icon = pygame.transform.smoothscale(pygame.image.load("assets/bullet.png").convert_alpha(), (150, 150))
 bullet_pick = pygame.transform.smoothscale(pygame.image.load("assets/bullet.png").convert_alpha(), (50, 50))
+speed_pick = pygame.transform.smoothscale(pygame.image.load("assets/speed.png").convert_alpha(), (50, 50))
 
 enemy_shoot_sound = pygame.mixer.Sound(file="assets/enemy_shoot.ogg")
 bullet_pick_sound = pygame.mixer.Sound(file="assets/bullet_pickup.ogg")
@@ -27,6 +30,8 @@ shoot_sound = pygame.mixer.Sound(file="assets/shoot.ogg")
 kill_sound = pygame.mixer.Sound(file="assets/kill.ogg")
 empty_sound = pygame.mixer.Sound(file="assets/empty.ogg")
 death_sound = pygame.mixer.Sound(file="assets/death.ogg")
+
+powerup_speed = False
 
 
 class Enemy:
@@ -153,7 +158,10 @@ def rotate():
 
     key = pygame.key.get_pressed()
     try:
-        speed = 450 / clock.get_fps()
+        if powerup_speed:
+            speed = 700 / clock.get_fps()
+        else:
+            speed = 450 / clock.get_fps()
     except ZeroDivisionError:
         speed = 7.5
 
@@ -197,6 +205,7 @@ def get_num_enemies():
     except IndexError:
         win = True
         return -1
+
 
 bullets = []
 enemies = []
@@ -287,6 +296,7 @@ while run:
                             death_sound.play()
                             # dead rip
                             dead = True
+                            powerup_speed = False
             enemy.draw(x, y)
 
             enemy.update(x, y)
@@ -298,10 +308,28 @@ while run:
             bullet_pick_sound.play()
 
 
-        if (bullet_count < 3 and random.randint(1, (round(clock.get_fps()) * 20) + 1) == 5) or (
-                bullet_count == 0 and random.randint(1, (round(clock.get_fps()) * 5) + 1) == 5):
-            pickups.append(Pickup("bullet", (random.randint(50, SCREEN_WIDTH - 50),
-                                             random.randint(50, SCREEN_HEIGHT - 50)), bullet_pick, pick))
+        def speed_picked():
+            global powerup_speed
+            powerup_speed = True
+
+            def speed_over():
+                global powerup_speed
+                powerup_speed = False
+
+            t = Timer(5.0, speed_over)
+            t.start()
+
+
+        if not dead:
+            # spawn powerups
+            if (bullet_count < 3 and random.randint(1, (round(clock.get_fps()) * 20) + 1) == 5) or (
+                    bullet_count == 0 and random.randint(1, (round(clock.get_fps()) * 5) + 1) == 5):
+                pickups.append(Pickup("bullet", (random.randint(50, SCREEN_WIDTH - 50),
+                                                 random.randint(50, SCREEN_HEIGHT - 50)), bullet_pick, pick))
+            if random.randint(1, (round(clock.get_fps()) * 5) + 1) == 5:
+                if not powerup_speed:
+                    pickups.append(Pickup("speed", (random.randint(50, SCREEN_WIDTH - 50),
+                                                    random.randint(50, SCREEN_HEIGHT - 50)), speed_pick, speed_picked))
 
         for bullet in bullets[:]:
             if not dead:
