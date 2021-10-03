@@ -341,7 +341,7 @@ while run:
             global powerup_speed
             global speed_remaining
             speed_remaining = round(5 - (0.1 * ticks), 2)
-            print(speed_remaining)
+            #print(speed_remaining)
             if speed_remaining == 0:
                 powerup_speed = False
 
