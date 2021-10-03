@@ -150,16 +150,16 @@ class Enemy:
         self.center_pos = tuple(enemy_position)
 
 
-def call_repeatedly(interval, stopTicks, func):
+def call_repeatedly(interval, max_ticks, func):
     stopped = Event()
 
     def loop():
-        nonlocal stopTicks
+        nonlocal max_ticks
         nonlocal t
         ticks = 0
         while not stopped.wait(interval):
             ticks += 1
-            if ticks == stopTicks:
+            if ticks == max_ticks:
                 return
 
             func(ticks)
@@ -332,19 +332,18 @@ while run:
 
         def speed_picked():
             global powerup_speed
-            global speed_timed
             powerup_speed = True
-            speed_time = call_repeatedly(0.1, 51, speed_tick)
-            #speed_time()
+            call_repeatedly(0.1, 51, speed_tick)
+            # speed_time()
+
 
         def speed_tick(ticks):
             global powerup_speed
             global speed_remaining
-            speed_remaining = round(5 - (0.1*ticks), 2)
+            speed_remaining = round(5 - (0.1 * ticks), 2)
             print(speed_remaining)
             if speed_remaining == 0:
                 powerup_speed = False
-
 
 
         if not dead:
