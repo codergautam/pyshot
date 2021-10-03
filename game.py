@@ -2,7 +2,7 @@ import math
 import random
 import time
 
-from threading import Timer
+from threading import Event, Thread
 
 import pygame
 from pygame.constants import RESIZABLE
@@ -32,6 +32,8 @@ empty_sound = pygame.mixer.Sound(file="assets/empty.ogg")
 death_sound = pygame.mixer.Sound(file="assets/death.ogg")
 
 powerup_speed = False
+
+speed_remaining = None
 
 
 class Enemy:
@@ -146,6 +148,26 @@ class Enemy:
 
         self.pos = (enemy_position[0] - 50, enemy_position[1] - 50)
         self.center_pos = tuple(enemy_position)
+
+
+def call_repeatedly(interval, stopTicks, func):
+    stopped = Event()
+
+    def loop():
+        nonlocal stopTicks
+        nonlocal t
+        ticks = 0
+        while not stopped.wait(interval):
+            ticks += 1
+            if ticks == stopTicks:
+                return
+
+            func(ticks)
+
+    t = Thread(target=loop)
+    t.daemon = True
+    t.start()
+    return stopped.set
 
 
 def rotate():
@@ -310,14 +332,19 @@ while run:
 
         def speed_picked():
             global powerup_speed
+            global speed_timed
             powerup_speed = True
+            speed_time = call_repeatedly(0.1, 51, speed_tick)
+            #speed_time()
 
-            def speed_over():
-                global powerup_speed
+        def speed_tick(ticks):
+            global powerup_speed
+            global speed_remaining
+            speed_remaining = round(5 - (0.1*ticks), 2)
+            print(speed_remaining)
+            if speed_remaining == 0:
                 powerup_speed = False
 
-            t = Timer(5.0, speed_over)
-            t.start()
 
 
         if not dead:
