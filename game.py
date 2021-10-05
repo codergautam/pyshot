@@ -221,7 +221,7 @@ def rotate():
 
 def get_num_enemies():
     global win
-    waves_enemy = [1, 1, 2, 2, 3]
+    waves_enemy = [1, 1, 2, 2, 3,4,5,6,7,8,9,10]
     try:
         return waves_enemy[wave - 1] - 1
     except IndexError:
