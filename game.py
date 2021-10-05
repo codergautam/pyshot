@@ -31,9 +31,11 @@ kill_sound = pygame.mixer.Sound(file="assets/kill.ogg")
 empty_sound = pygame.mixer.Sound(file="assets/empty.ogg")
 death_sound = pygame.mixer.Sound(file="assets/death.ogg")
 
-powerup_speed = False
+
 
 speed_remaining = None
+
+powerups = []
 
 
 class Enemy:
@@ -180,7 +182,7 @@ def rotate():
 
     key = pygame.key.get_pressed()
     try:
-        if powerup_speed:
+        if "speed" in powerups:
             speed = 700 / clock.get_fps()
         else:
             speed = 450 / clock.get_fps()
@@ -318,7 +320,7 @@ while run:
                             death_sound.play()
                             # dead rip
                             dead = True
-                            powerup_speed = False
+                            powerups.clear()
             enemy.draw(x, y)
 
             enemy.update(x, y)
@@ -331,19 +333,19 @@ while run:
 
 
         def speed_picked():
-            global powerup_speed
-            powerup_speed = True
+            global powerups
+            powerups.append("speed")
             call_repeatedly(0.1, 51, speed_tick)
             # speed_time()
 
 
         def speed_tick(ticks):
-            global powerup_speed
+            global powerups
             global speed_remaining
             speed_remaining = round(5 - (0.1 * ticks), 2)
             #print(speed_remaining)
             if speed_remaining == 0:
-                powerup_speed = False
+                powerups.remove("speed")
 
 
         if not dead:
@@ -353,7 +355,7 @@ while run:
                 pickups.append(Pickup("bullet", (random.randint(50, SCREEN_WIDTH - 50),
                                                  random.randint(50, SCREEN_HEIGHT - 50)), bullet_pick, pick))
             if random.randint(1, (round(clock.get_fps()) * 5) + 1) == 5:
-                if not powerup_speed:
+                if not "speed" in powerups:
                     pickups.append(Pickup("speed", (random.randint(50, SCREEN_WIDTH - 50),
                                                     random.randint(50, SCREEN_HEIGHT - 50)), speed_pick, speed_picked))
 
